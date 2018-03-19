@@ -36,12 +36,12 @@ public class MasterBlaster extends AbstractionLayerAI {
     // If we have a barracks: train light
     // If we have a worker: do this if needed: build base, build barracks, harvest resources
 
-    public LightRush(UnitTypeTable a_utt) {
+    public MasterBlaster(UnitTypeTable a_utt) {
         this(a_utt, new AStarPathFinding());
     }
     
     
-    public LightRush(UnitTypeTable a_utt, PathFinding a_pf) {
+    public MasterBlaster(UnitTypeTable a_utt, PathFinding a_pf) {
         super(a_pf);
         reset(a_utt);
     }
