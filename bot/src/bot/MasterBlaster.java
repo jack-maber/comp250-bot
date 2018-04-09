@@ -1,4 +1,5 @@
-/* To change this template, choose Tools | Templates
+/*
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 package bot;
@@ -6,7 +7,6 @@ package bot;
 import ai.abstraction.AbstractAction;
 import ai.abstraction.AbstractionLayerAI;
 import ai.abstraction.Harvest;
-import ai.abstraction.LightRush;
 import ai.abstraction.pathfinding.AStarPathFinding;
 import ai.core.AI;
 import ai.abstraction.pathfinding.PathFinding;
@@ -32,19 +32,17 @@ public class MasterBlaster extends AbstractionLayerAI {
     UnitType workerType;
     UnitType baseType;
     UnitType barracksType;
-    UnitType lightType;
+    UnitType rangedType;
 
-    // Strategy implemented by this class:
     // If we have any "light": send it to attack to the nearest enemy unit
     // If we have a base: train worker until we have 1 workers
     // If we have a barracks: train light
     // If we have a worker: do this if needed: build base, build barracks, harvest resources
-
     public MasterBlaster(UnitTypeTable a_utt) {
         this(a_utt, new AStarPathFinding());
     }
-    
-    
+
+
     public MasterBlaster(UnitTypeTable a_utt, PathFinding a_pf) {
         super(a_pf);
         reset(a_utt);
@@ -54,29 +52,18 @@ public class MasterBlaster extends AbstractionLayerAI {
     	super.reset();
     }
     
-    public void reset(UnitTypeTable a_utt)  
-    {
+    public void reset(UnitTypeTable a_utt) {
         utt = a_utt;
         workerType = utt.getUnitType("Worker");
         baseType = utt.getUnitType("Base");
         barracksType = utt.getUnitType("Barracks");
-        lightType = utt.getUnitType("Light");
-    }   
-    
-
-    public AI clone() {
-        return new LightRush(utt, pf);
+        rangedType = utt.getUnitType("Ranged");
     }
 
-    /*
-        This is the main function of the AI. It is called at each game cycle with the most up to date game state and
-        returns which actions the AI wants to execute in this cycle.
-        The input parameters are:
-        - player: the player that the AI controls (0 or 1)
-        - gs: the current game state
-        This method returns the actions to be sent to each of the units in the gamestate controlled by the player,
-        packaged as a PlayerAction.
-     */
+    public AI clone() {
+        return new MasterBlaster(utt, pf);
+    }
+
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         Player p = gs.getPlayer(player);
@@ -119,7 +106,7 @@ public class MasterBlaster extends AbstractionLayerAI {
         }
         workersBehavior(workers, p, pgs);
 
-        // This method simply takes all the unit actions executed so far, and packages them into a PlayerAction
+
         return translateActions(player, gs);
     }
 
@@ -137,8 +124,8 @@ public class MasterBlaster extends AbstractionLayerAI {
     }
 
     public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
-        if (p.getResources() >= lightType.cost) {
-            train(u, lightType);
+        if (p.getResources() >= rangedType.cost) {
+            train(u, rangedType);
         }
     }
 
@@ -194,9 +181,9 @@ public class MasterBlaster extends AbstractionLayerAI {
             }
         }
 
-        if (nbarracks == 0) {
+        if (nbarracks == 0 && !freeWorkers.isEmpty()) {
             // build a barracks:
-            if (p.getResources() >= barracksType.cost + resourcesUsed && !freeWorkers.isEmpty()) {
+            if (p.getResources() >= barracksType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
                 buildIfNotAlreadyBuilding(u,barracksType,u.getX(),u.getY(),reservedPositions,p,pgs);
                 resourcesUsed += barracksType.cost;
@@ -240,7 +227,7 @@ public class MasterBlaster extends AbstractionLayerAI {
         }
     }
 
-    
+   
     @Override
     public List<ParameterSpecification> getParameters()
     {
@@ -249,7 +236,5 @@ public class MasterBlaster extends AbstractionLayerAI {
         parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new AStarPathFinding()));
 
         return parameters;
-    }    
-    
+    }
 }
-
