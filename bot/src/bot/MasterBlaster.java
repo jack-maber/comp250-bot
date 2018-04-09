@@ -1,8 +1,12 @@
-* To change this template, choose Tools | Templates
+/* To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ai.abstraction;
+package bot;
 
+import ai.abstraction.AbstractAction;
+import ai.abstraction.AbstractionLayerAI;
+import ai.abstraction.Harvest;
+import ai.abstraction.LightRush;
 import ai.abstraction.pathfinding.AStarPathFinding;
 import ai.core.AI;
 import ai.abstraction.pathfinding.PathFinding;
