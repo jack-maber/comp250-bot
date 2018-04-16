@@ -27,12 +27,15 @@ import rts.units.*;
  */
 public class MasterBlaster extends AbstractionLayerAI {
 
-    Random r = new Random();
+    
+	Random r = new Random();
+    boolean builtRanged = false;
     protected UnitTypeTable utt;
     UnitType workerType;
     UnitType baseType;
     UnitType barracksType;
     UnitType rangedType;
+    UnitType heavyType;
 
     // If we have any "light": send it to attack to the nearest enemy unit
     // If we have a base: train worker until we have 1 workers
@@ -58,6 +61,7 @@ public class MasterBlaster extends AbstractionLayerAI {
         baseType = utt.getUnitType("Base");
         barracksType = utt.getUnitType("Barracks");
         rangedType = utt.getUnitType("Ranged");
+        heavyType = utt.getUnitType("Heavy");
     }
 
     public AI clone() {
@@ -87,12 +91,12 @@ public class MasterBlaster extends AbstractionLayerAI {
             }
         }
 
-        // behavior of melee units:
+        // behavior of ranged units:
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canAttack && !u.getType().canHarvest
                     && u.getPlayer() == player
                     && gs.getActionAssignment(u) == null) {
-                meleeUnitBehavior(u, p, gs);
+                rangedUnitBehavior(u, p, gs);
             }
         }
 
@@ -124,12 +128,18 @@ public class MasterBlaster extends AbstractionLayerAI {
     }
 
     public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
-        if (p.getResources() >= rangedType.cost) {
+        if (p.getResources() >= rangedType.cost&&builtRanged == false) {
             train(u, rangedType);
+            builtRanged = true;
+        }
+        else 
+        {
+        	train(u, heavyType);
+        	builtRanged = false;
         }
     }
 
-    public void meleeUnitBehavior(Unit u, Player p, GameState gs) {
+    public void rangedUnitBehavior(Unit u, Player p, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         Unit closestEnemy = null;
         int closestDistance = 3;
