@@ -233,7 +233,7 @@ public class MasterBlaster extends AbstractionLayerAI {
     {
         List<ParameterSpecification> parameters = new ArrayList<>();
         
-        parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new AStarPathFinding()));
+        parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new GreedyPathFinding()));
 
         return parameters;
     }
