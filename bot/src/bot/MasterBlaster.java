@@ -7,7 +7,7 @@ package bot;
 import ai.abstraction.AbstractAction;
 import ai.abstraction.AbstractionLayerAI;
 import ai.abstraction.Harvest;
-import ai.abstraction.pathfinding.AStarPathFinding;
+import ai.abstraction.pathfinding.GreedyPathFinding;
 import ai.core.AI;
 import ai.abstraction.pathfinding.PathFinding;
 import ai.core.ParameterSpecification;
@@ -39,7 +39,7 @@ public class MasterBlaster extends AbstractionLayerAI {
     // If we have a barracks: train light
     // If we have a worker: do this if needed: build base, build barracks, harvest resources
     public MasterBlaster(UnitTypeTable a_utt) {
-        this(a_utt, new AStarPathFinding());
+        this(a_utt, new GreedyPathFinding());
     }
 
 

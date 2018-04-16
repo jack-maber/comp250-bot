@@ -6,6 +6,7 @@ package tests;
 
 
 import ai.core.AI;
+import ai.RandomAI;
 import ai.RandomBiasedAI;
 import ai.abstraction.WorkerRush;
 import ai.abstraction.pathfinding.BFSPathFinding;
