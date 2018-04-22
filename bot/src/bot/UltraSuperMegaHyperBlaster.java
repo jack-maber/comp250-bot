@@ -24,8 +24,7 @@ import rts.units.*;
 
 public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
-    
-	Random r = new Random();
+	int nworkers = 0;
     boolean builtRanged = false;
     protected UnitTypeTable utt;
     UnitType workerType;
@@ -87,7 +86,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
         // Behaviour of ranged units:
         for (Unit u : pgs.getUnits()) {
-            if (u.getType().canAttack && !u.getType().canHarvest
+            if (u.getType().canAttack
                     && u.getPlayer() == player
                     && gs.getActionAssignment(u) == null) {
                 rangedUnitBehavior(u, p, gs);
@@ -106,7 +105,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         
         // Behaviour of Heavy units:
         for (Unit u : pgs.getUnits()) {
-            if (u.getType().canAttack && !u.getType().canHarvest
+            if (u.getType().canAttack
                     && u.getPlayer() == player
                     && gs.getActionAssignment(u) == null) {
                 heavyUnitBehavior(u, p, gs);
@@ -117,15 +116,16 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     }
 
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
-        int nworkers = 0;
         for (Unit u2 : pgs.getUnits()) 
         {
             if (u2.getType() == workerType
-                    && u2.getPlayer() == p.getID()) {
+                    && u2.getPlayer() == p.getID()) 
+            {
                 nworkers++;
             }
         }
-        if (nworkers < 2 && p.getResources() >= workerType.cost) {
+        if (p.getResources() >= workerType.cost) 
+        {
             train(u, workerType);
         }
     }
@@ -149,7 +149,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         for (Unit u2 : pgs.getUnits()) {
             if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
                 int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                if (closestEnemy == null || d < closestDistance) {
+                if (closestEnemy == null || d < closestDistance) 
+                {
                     closestEnemy = u2;
                     closestDistance = d;
                 }
@@ -163,33 +164,33 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
     public void heavyUnitBehavior(Unit u, Player p, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
-        Unit closestEnemy = null;
+        Unit closestBase = null;
         int closestDistance = 1;
         for (Unit u2 : pgs.getUnits()) {
             if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
                 int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                if (closestEnemy == null || d < closestDistance) 
+                if (closestBase == null || d < closestDistance) 
                 {
-                    closestEnemy = u2;
+                	closestBase = u2;
                     closestDistance = d;
                 }
             }
         }
-        if (closestEnemy != null) 
+        if (closestBase != null) 
         {
-            attack(u, closestEnemy);
+            attack(u, closestBase);
         }
     }
 
     
     
     
-    public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
+    public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) 
+    {
         int nbases = 0;
         int nbarracks = 0;
-        
-
         int resourcesUsed = 0;
+        
         List<Unit> freeWorkers = new LinkedList<Unit>();
         freeWorkers.addAll(workers);
 
@@ -210,6 +211,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         }
 
         List<Integer> reservedPositions = new LinkedList<Integer>();
+        
         if (nbases == 0 && !freeWorkers.isEmpty()) {
             // build a base:
             if (p.getResources() >= baseType.cost + resourcesUsed) {
@@ -227,45 +229,27 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 resourcesUsed += barracksType.cost;
             }
         }
-
-
+        
         // harvest with all the free workers:
-        for (Unit u : freeWorkers) {
-            Unit closestBase = null;
+        for (Unit u : freeWorkers) 
+        {
             Unit closestResource = null;
             int closestDistance = 0;
-            for (Unit u2 : pgs.getUnits()) {
-                if (u2.getType().isResource) {
+            for (Unit u2 : pgs.getUnits()) 
+            {
+                if (u2.getType().isResource) 
+                {
                     int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                    if (closestResource == null || d < closestDistance) {
+                    if (closestResource == null || d < closestDistance) 
+                    {
                         closestResource = u2;
                         closestDistance = d;
                     }
                 }
             }
-            closestDistance = 0;
-            for (Unit u2 : pgs.getUnits()) {
-                if (u2.getType().isStockpile && u2.getPlayer()==p.getID()) {
-                    int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                    if (closestBase == null || d < closestDistance) {
-                        closestBase = u2;
-                        closestDistance = d;
-                    }
-                }
-            }
-            if (closestResource != null && closestBase != null) {
-                AbstractAction aa = getAbstractAction(u);
-                if (aa instanceof Harvest) {
-                    Harvest h_aa = (Harvest)aa;
-                    if (h_aa.getTarget() != closestResource || h_aa.getBase()!=closestBase) harvest(u, closestResource, closestBase);
-                } else {
-                    harvest(u, closestResource, closestBase);
-                }
-            }
         }
     }
-
-   
+    
     @Override
     public List<ParameterSpecification> getParameters()
     {
