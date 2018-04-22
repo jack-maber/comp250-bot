@@ -187,6 +187,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
         int nbases = 0;
         int nbarracks = 0;
+        
 
         int resourcesUsed = 0;
         List<Unit> freeWorkers = new LinkedList<Unit>();
@@ -205,6 +206,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                     && u2.getPlayer() == p.getID()) {
                 nbarracks++;
             }
+
         }
 
         List<Integer> reservedPositions = new LinkedList<Integer>();
