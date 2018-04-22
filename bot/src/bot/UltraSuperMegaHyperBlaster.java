@@ -7,7 +7,7 @@ package bot;
 import ai.abstraction.AbstractAction;
 import ai.abstraction.AbstractionLayerAI;
 import ai.abstraction.Harvest;
-import ai.abstraction.pathfinding.FloodFillPathFinding;
+import ai.abstraction.pathfinding.AStarPathFinding;
 import ai.core.AI;
 import ai.abstraction.pathfinding.PathFinding;
 import ai.core.ParameterSpecification;
@@ -36,7 +36,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
     
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt) {
-        this(a_utt, new FloodFillPathFinding());
+        this(a_utt, new AStarPathFinding());
     }
 
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt, PathFinding a_pf) {
@@ -99,7 +99,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canHarvest
                     && u.getPlayer() == player) {
-                //workers.add(u);
+                workers.add(u);
                 workersBehavior(workers, p, pgs);
             }
         }
@@ -112,18 +112,20 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 heavyUnitBehavior(u, p, gs);
             }
         }
+        
         return translateActions(player, gs);
     }
 
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
         int nworkers = 0;
-        for (Unit u2 : pgs.getUnits()) {
+        for (Unit u2 : pgs.getUnits()) 
+        {
             if (u2.getType() == workerType
                     && u2.getPlayer() == p.getID()) {
                 nworkers++;
             }
         }
-        if (nworkers < 1 && p.getResources() >= workerType.cost) {
+        if (nworkers < 2 && p.getResources() >= workerType.cost) {
             train(u, workerType);
         }
     }
@@ -166,7 +168,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         for (Unit u2 : pgs.getUnits()) {
             if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
                 int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                if (closestEnemy == null || d < closestDistance) {
+                if (closestEnemy == null || d < closestDistance) 
+                {
                     closestEnemy = u2;
                     closestDistance = d;
                 }
@@ -266,7 +269,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     {
         List<ParameterSpecification> parameters = new ArrayList<>();
         
-        parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new FloodFillPathFinding()));
+        parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new AStarPathFinding()));
 
         return parameters;
     }
