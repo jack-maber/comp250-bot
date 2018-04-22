@@ -24,19 +24,20 @@ import rts.units.*;
 
 public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
+    
 	
-    boolean builtRanged = false;
+    
     protected UnitTypeTable utt;
     UnitType workerType;
     UnitType baseType;
     UnitType barracksType;
     UnitType rangedType;
-    UnitType heavyType;
 
-    
+
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt) {
         this(a_utt, new AStarPathFinding());
     }
+
 
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt, PathFinding a_pf) {
         super(a_pf);
@@ -53,11 +54,9 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         baseType = utt.getUnitType("Base");
         barracksType = utt.getUnitType("Barracks");
         rangedType = utt.getUnitType("Ranged");
-        heavyType = utt.getUnitType("Heavy");
     }
 
-    public AI clone() 
-    {
+    public AI clone() {
         return new UltraSuperMegaHyperBlaster(utt, pf);
     }
 
@@ -66,7 +65,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         Player p = gs.getPlayer(player);
 
 
-        // Behaviour of bases:
+        // behavior of bases:
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == baseType
                     && u.getPlayer() == player
@@ -75,25 +74,25 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // Behaviour of barracks:
+        // behavior of barracks:
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == barracksType
                     && u.getPlayer() == player
                     && gs.getActionAssignment(u) == null) {
-                barracksBehavior(u, p, pgs);
+                barracksBehaviour(u, p, pgs);
             }
         }
 
-        // Behaviour of ranged units:
+        // behavior of ranged units:
         for (Unit u : pgs.getUnits()) {
-            if (u.getType().canAttack
+            if (u.getType().canAttack && !u.getType().canHarvest
                     && u.getPlayer() == player
                     && gs.getActionAssignment(u) == null) {
                 rangedUnitBehavior(u, p, gs);
             }
         }
-
-        // Behaviour of workers:
+        
+        // behavior of workers:
         List<Unit> workers = new LinkedList<Unit>();
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canHarvest
@@ -102,132 +101,76 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
         workersBehavior(workers, p, pgs);
-        
-        // Behaviour of Heavy units:
-        for (Unit u : pgs.getUnits()) {
-            if (u.getType().canAttack
-                    && u.getPlayer() == player
-                    && gs.getActionAssignment(u) == null) {
-                heavyUnitBehavior(u, p, gs);
-            }
-        }
-        
+
+
         return translateActions(player, gs);
     }
 
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
-    	int nworkers = 0;
-    	for (Unit u2 : pgs.getUnits()) 
-        {
+        int nworkers = 0;
+        for (Unit u2 : pgs.getUnits()) {
             if (u2.getType() == workerType
-                    && u2.getPlayer() == p.getID()) 
-            {
+                    && u2.getPlayer() == p.getID()) {
                 nworkers++;
-                train(u, workerType);
             }
         }
-        if (nworkers < 2 && p.getResources() >= workerType.cost) 
-        {
+        if (nworkers < 2 && p.getResources() >= workerType.cost) {
             train(u, workerType);
         }
     }
 
-    public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) 
-    {
-        
-    	if (builtRanged == false) 
-    	{
-            train(u, heavyType);
-            builtRanged = true;
-            
-        }
-        else 
-        {
-        	train(u, heavyType);
-        	builtRanged = false;
-        	
+    public void barracksBehaviour(Unit u, Player p, PhysicalGameState pgs) {
+        if (p.getResources() >= rangedType.cost) {
+            train(u, rangedType);
         }
     }
 
+
     public void rangedUnitBehavior(Unit u, Player p, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
-        Unit closestEnemy = null;
+        Unit closestBase = null;
         int closestDistance = 3;
         for (Unit u2 : pgs.getUnits()) {
             if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
                 int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                if (closestEnemy == null || d < closestDistance) 
-                {
-                    closestEnemy = u2;
-                    closestDistance = d;
-                }
-            }
-        }
-        if (closestEnemy != null) {
-//            System.out.println("LightRushAI.meleeUnitBehavior: " + u + " attacks " + closestEnemy);
-            attack(u, closestEnemy);
-        }
-    }
-
-    public void heavyUnitBehavior(Unit u, Player p, GameState gs) {
-        PhysicalGameState pgs = gs.getPhysicalGameState();
-        Unit closestBase = null;
-        int closestDistance = 1;
-        for (Unit u2 : pgs.getUnits()) {
-            if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
-                int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-                if (closestBase == null || d < closestDistance) 
-                {
+                if (closestBase == null || d < closestDistance) {
                 	closestBase = u2;
                     closestDistance = d;
                 }
             }
         }
-        if (closestBase != null) 
-        {
+        if (closestBase != null) {
+
             attack(u, closestBase);
         }
     }
+    
 
-    
-    
-    
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
-        int nbases = 0;
         int nbarracks = 0;
+
         int resourcesUsed = 0;
-        
         List<Unit> freeWorkers = new LinkedList<Unit>();
         freeWorkers.addAll(workers);
 
-        if (workers.isEmpty()) {
+        if (workers.isEmpty()) 
+        {
             return;
         }
 
         for (Unit u2 : pgs.getUnits()) {
-            if (u2.getType() == baseType
-                    && u2.getPlayer() == p.getID()) {
-                nbases++;
-            }
+            
             if (u2.getType() == barracksType
                     && u2.getPlayer() == p.getID()) {
                 nbarracks++;
             }
-
         }
 
         List<Integer> reservedPositions = new LinkedList<Integer>();
         
-        if (nbases == 0 && !freeWorkers.isEmpty()) {
-            // build a base:
-            if (p.getResources() >= baseType.cost + resourcesUsed) {
-                Unit u = freeWorkers.remove(0);
-                buildIfNotAlreadyBuilding(u,baseType,u.getX(),u.getY(),reservedPositions,p,pgs);
-                resourcesUsed += baseType.cost;
-            }
-        }
 
-        if (nbarracks == 0 && !freeWorkers.isEmpty()) {
+        if (nbarracks < 2 && !freeWorkers.isEmpty()) 
+        		{
             // build a barracks:
             if (p.getResources() >= barracksType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
@@ -235,10 +178,10 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 resourcesUsed += barracksType.cost;
             }
         }
-        
+
+
         // harvest with all the free workers:
-        for (Unit u : freeWorkers) 
-        {
+        for (Unit u : freeWorkers) {
             Unit closestBase = null;
             Unit closestResource = null;
             int closestDistance = 0;
