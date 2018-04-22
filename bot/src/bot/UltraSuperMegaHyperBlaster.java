@@ -7,7 +7,7 @@ package bot;
 import ai.abstraction.AbstractAction;
 import ai.abstraction.AbstractionLayerAI;
 import ai.abstraction.Harvest;
-import ai.abstraction.pathfinding.AStarPathFinding;
+import ai.abstraction.pathfinding.FloodFillPathFinding;
 import ai.core.AI;
 import ai.abstraction.pathfinding.PathFinding;
 import ai.core.ParameterSpecification;
@@ -21,10 +21,7 @@ import rts.Player;
 import rts.PlayerAction;
 import rts.units.*;
 
-/**
- *
- * @author santi
- */
+
 public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
     
@@ -37,14 +34,10 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     UnitType rangedType;
     UnitType heavyType;
 
-    // If we have any "light": send it to attack to the nearest enemy unit
-    // If we have a base: train worker until we have 1 workers
-    // If we have a barracks: train light
-    // If we have a worker: do this if needed: build base, build barracks, harvest resources
+    
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt) {
-        this(a_utt, new AStarPathFinding());
+        this(a_utt, new FloodFillPathFinding());
     }
-
 
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt, PathFinding a_pf) {
         super(a_pf);
@@ -64,16 +57,17 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         heavyType = utt.getUnitType("Heavy");
     }
 
-    public AI clone() {
+    public AI clone() 
+    {
         return new UltraSuperMegaHyperBlaster(utt, pf);
     }
 
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         Player p = gs.getPlayer(player);
-//        System.out.println("LightRushAI for player " + player + " (cycle " + gs.getTime() + ")");
 
-        // behavior of bases:
+
+        // Behaviour of bases:
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == baseType
                     && u.getPlayer() == player
@@ -82,7 +76,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // behavior of barracks:
+        // Behaviour of barracks:
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == barracksType
                     && u.getPlayer() == player
@@ -91,7 +85,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // behavior of ranged units:
+        // Behaviour of ranged units:
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canAttack && !u.getType().canHarvest
                     && u.getPlayer() == player
@@ -100,17 +94,24 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // behavior of workers:
+        // Behaviour of workers:
         List<Unit> workers = new LinkedList<Unit>();
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canHarvest
                     && u.getPlayer() == player) {
-                workers.add(u);
+                //workers.add(u);
+                workersBehavior(workers, p, pgs);
             }
         }
-        workersBehavior(workers, p, pgs);
-
-
+        
+        // Behaviour of Heavy units:
+        for (Unit u : pgs.getUnits()) {
+            if (u.getType().canAttack && !u.getType().canHarvest
+                    && u.getPlayer() == player
+                    && gs.getActionAssignment(u) == null) {
+                heavyUnitBehavior(u, p, gs);
+            }
+        }
         return translateActions(player, gs);
     }
 
@@ -158,6 +159,28 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         }
     }
 
+    public void heavyUnitBehavior(Unit u, Player p, GameState gs) {
+        PhysicalGameState pgs = gs.getPhysicalGameState();
+        Unit closestEnemy = null;
+        int closestDistance = 1;
+        for (Unit u2 : pgs.getUnits()) {
+            if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
+                int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
+                if (closestEnemy == null || d < closestDistance) {
+                    closestEnemy = u2;
+                    closestDistance = d;
+                }
+            }
+        }
+        if (closestEnemy != null) 
+        {
+            attack(u, closestEnemy);
+        }
+    }
+
+    
+    
+    
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
         int nbases = 0;
         int nbarracks = 0;
@@ -243,7 +266,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     {
         List<ParameterSpecification> parameters = new ArrayList<>();
         
-        parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new AStarPathFinding()));
+        parameters.add(new ParameterSpecification("PathFinding", PathFinding.class, new FloodFillPathFinding()));
 
         return parameters;
     }
