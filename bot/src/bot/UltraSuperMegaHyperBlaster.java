@@ -132,7 +132,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         }
     }
 
-    public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
+    public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) 
+    {
         
     	if (builtRanged == false) 
     	{
