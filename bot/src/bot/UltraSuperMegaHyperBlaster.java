@@ -133,11 +133,12 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     }
 
     public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
-        int attackUnits = 0;
-    	if (p.getResources() >= rangedType.cost&&builtRanged == false) {
-            train(u, rangedType);
+        
+    	if (builtRanged == false) 
+    	{
+            train(u, heavyType);
             builtRanged = true;
-            attackUnits++;
+            
         }
         else 
         {
