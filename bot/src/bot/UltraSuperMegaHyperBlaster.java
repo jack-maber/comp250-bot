@@ -32,7 +32,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     UnitType baseType;
     UnitType barracksType;
     UnitType rangedType;
-
+    
+    static int prodWorkerAmount = 0;
 
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt) {
         this(a_utt, new AStarPathFinding());
@@ -92,6 +93,15 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
         
+        // Behaviour of melee units:
+        for (Unit u : pgs.getUnits()) {
+            if (u.getType().canAttack && !u.getType().canHarvest
+                    && u.getPlayer() == player
+                    && gs.getActionAssignment(u) == null) {
+                meleeUnitBehavior(u, p, gs);
+            }
+        }
+        
         // Behaviour of workers:
         List<Unit> workers = new LinkedList<Unit>();
         for (Unit u : pgs.getUnits()) {
@@ -115,7 +125,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 nworkers++;
             }
         }
-        if (nworkers < 2 && p.getResources() >= workerType.cost) {
+        if (nworkers < 4 && p.getResources() >= workerType.cost) {
             train(u, workerType);
         }
     }
@@ -146,11 +156,37 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         }
     }
     
+    
+    public void meleeUnitBehavior(Unit u, Player p, GameState gs) {
+        PhysicalGameState pgs = gs.getPhysicalGameState();
+        Unit closestEnemy = null;
+        int closestDistance = 0;
+        for (Unit u2 : pgs.getUnits()) {
+            if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
+                int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
+                if (closestEnemy == null || d < closestDistance) {
+                    closestEnemy = u2;
+                    closestDistance = d;
+                }
+            }
+        }
+        if (closestEnemy != null) {
+//            System.out.println("LightRushAI.meleeUnitBehavior: " + u + " attacks " + closestEnemy);
+            attack(u, closestEnemy);
+        }
+    }
 
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
         int nbarracks = 0;
+        int attackNeeds = 4;
+        Unit AttackWorker = null;
 
         List<Unit> freeWorkers = new LinkedList<Unit>();
+        List<Unit> fightWorkers = new LinkedList<Unit>();
+        
+        //Locations of bases and barracks to build on
+        List<Integer> reservedPositions = new LinkedList<Integer>();
+        
         freeWorkers.addAll(workers);
 
         if (workers.isEmpty()) 
@@ -158,6 +194,15 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             return;
         }
 
+   
+        
+        if (attackNeeds < freeWorkers.size())
+        {
+        	AttackWorker = (freeWorkers.remove(0));
+        	fightWorkers.add(AttackWorker);
+        }
+        
+        
         for (Unit u2 : pgs.getUnits()) 
         {
             if (u2.getType() == barracksType
@@ -167,9 +212,6 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        //Locations of bases and barracks to build on
-        List<Integer> reservedPositions = new LinkedList<Integer>();
-        
         //Build Barracks if there isn't one
         if (nbarracks < 1) 
         	{
@@ -214,6 +256,13 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 }
             }
         }
+        
+   	 	// Tells free workers to attack
+   	 	for (Unit unit:fightWorkers) 
+   	 	{
+   		 meleeUnitBehaviour(unit, p, gs);
+   	 	}
+        
         
     }
 
