@@ -148,8 +148,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
         int nbarracks = 0;
-
         int resourcesUsed = 0;
+        
         List<Unit> freeWorkers = new LinkedList<Unit>();
         freeWorkers.addAll(workers);
 
@@ -158,29 +158,32 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             return;
         }
 
-        for (Unit u2 : pgs.getUnits()) {
-            
+        for (Unit u2 : pgs.getUnits()) 
+        {
             if (u2.getType() == barracksType
-                    && u2.getPlayer() == p.getID()) {
+                && u2.getPlayer() == p.getID()) 
+            {
                 nbarracks++;
             }
         }
 
+        //Locations of bases and barracks to build on
         List<Integer> reservedPositions = new LinkedList<Integer>();
         
-
+        //Build Barracks if there isn't two
         if (nbarracks < 2 && !freeWorkers.isEmpty()) 
-        		{
-            // build a barracks:
-            if (p.getResources() >= barracksType.cost + resourcesUsed) {
+        	{
+            	// build a barracks:
+            	if (p.getResources() >= barracksType.cost) 
+            	{
                 Unit u = freeWorkers.remove(0);
                 buildIfNotAlreadyBuilding(u,barracksType,u.getX(),u.getY(),reservedPositions,p,pgs);
                 resourcesUsed += barracksType.cost;
-            }
-        }
+            	}
+        	}
 
 
-        // harvest with all the free workers:
+        // Free worker units harvest
         for (Unit u : freeWorkers) {
             Unit closestBase = null;
             Unit closestResource = null;
