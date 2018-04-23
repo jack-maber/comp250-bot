@@ -65,7 +65,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         Player p = gs.getPlayer(player);
 
 
-        // behavior of bases:
+        // Behaviour of bases:
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == baseType
                     && u.getPlayer() == player
@@ -74,7 +74,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // behavior of barracks:
+        // Behaviour of barracks:
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == barracksType
                     && u.getPlayer() == player
@@ -83,7 +83,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // behavior of ranged units:
+        // Behaviour of ranged units:
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canAttack && !u.getType().canHarvest
                     && u.getPlayer() == player
@@ -92,15 +92,16 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
         
-        // behavior of workers:
+        // Behaviour of workers:
         List<Unit> workers = new LinkedList<Unit>();
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canHarvest
                     && u.getPlayer() == player) {
                 workers.add(u);
+                workersBehavior(workers, p, pgs);
             }
         }
-        workersBehavior(workers, p, pgs);
+        
 
 
         return translateActions(player, gs);
@@ -170,17 +171,13 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         //Locations of bases and barracks to build on
         List<Integer> reservedPositions = new LinkedList<Integer>();
         
-        //Build Barracks if there isn't two
-        if (nbarracks < 2 && !freeWorkers.isEmpty()) 
+        //Build Barracks if there isn't one
+        if (nbarracks < 1) 
         	{
-            	// build a barracks:
-            	if (p.getResources() >= barracksType.cost) 
-            	{
-                Unit u = freeWorkers.remove(0);
+            	Unit u = freeWorkers.remove(0);
                 buildIfNotAlreadyBuilding(u,barracksType,u.getX(),u.getY(),reservedPositions,p,pgs);
                 resourcesUsed += barracksType.cost;
-            	}
-        	}
+            }
 
 
         // Free worker units harvest
@@ -197,7 +194,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                     }
                 }
             }
-            closestDistance = 0;
+            
+           
             for (Unit u2 : pgs.getUnits()) {
                 if (u2.getType().isStockpile && u2.getPlayer()==p.getID()) {
                     int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
@@ -207,6 +205,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                     }
                 }
             }
+            
             if (closestResource != null && closestBase != null) {
                 AbstractAction aa = getAbstractAction(u);
                 if (aa instanceof Harvest) {
@@ -217,6 +216,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 }
             }
         }
+        
     }
 
    
