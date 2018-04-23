@@ -149,8 +149,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
         int nbarracks = 0;
-        int resourcesUsed = 0;
-        
+
         List<Unit> freeWorkers = new LinkedList<Unit>();
         freeWorkers.addAll(workers);
 
@@ -176,11 +175,10 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         	{
             	Unit u = freeWorkers.remove(0);
                 buildIfNotAlreadyBuilding(u,barracksType,u.getX(),u.getY(),reservedPositions,p,pgs);
-                resourcesUsed += barracksType.cost;
             }
 
 
-        // Free worker units harvest
+        // Free worker units harvest and deposit
         for (Unit u : freeWorkers) {
             Unit closestBase = null;
             Unit closestResource = null;
