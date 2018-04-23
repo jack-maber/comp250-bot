@@ -177,6 +177,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     }
 
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
+    	
+    	
         int nbarracks = 0;
         int attackNeeds = 4;
         Unit AttackWorker = null;
@@ -257,11 +259,11 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
         
-   	 	// Tells free workers to attack
-   	 	for (Unit unit:fightWorkers) 
-   	 	{
-   		 meleeUnitBehaviour(unit, p, gs);
-   	 	}
+//   	 	// Tells free workers to attack
+//   	 	for (Unit unit:fightWorkers) 
+//   	 	{
+//   		 meleeUnitBehaviour(unit, p, gs);
+//   	 	}
         
         
     }
