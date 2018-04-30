@@ -26,17 +26,18 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
     
 	
-    
+    //Declares the units that I will be using
     protected UnitTypeTable utt;
     UnitType workerType;
     UnitType baseType;
     UnitType barracksType;
     UnitType rangedType;
     
+    //Keeps track of the amount of workers I will use
     static int prodWorkerAmount = 0;
 
     public UltraSuperMegaHyperBlaster(UnitTypeTable a_utt) {
-        this(a_utt, new AStarPathFinding());
+        this(a_utt, new AStarPathFinding()); //Use A* Pathfinding as this was the most effective 
     }
 
 
@@ -66,7 +67,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         Player p = gs.getPlayer(player);
 
 
-        // Behaviour of bases:
+        // Base Behaviour
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == baseType
                     && u.getPlayer() == player
@@ -75,7 +76,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // Behaviour of barracks:
+        // barracks Behaviour
         for (Unit u : pgs.getUnits()) {
             if (u.getType() == barracksType
                     && u.getPlayer() == player
@@ -84,7 +85,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
 
-        // Behaviour of ranged units:
+        // Ranged Behaviour
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canAttack && !u.getType().canHarvest
                     && u.getPlayer() == player
@@ -93,7 +94,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
         
-        // Behaviour of melee units:
+        // Melee Behaviour
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canAttack && !u.getType().canHarvest
                     && u.getPlayer() == player
@@ -102,7 +103,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
             }
         }
         
-        // Behaviour of workers:
+        // Worker Behaviour
         List<Unit> workers = new LinkedList<Unit>();
         for (Unit u : pgs.getUnits()) {
             if (u.getType().canHarvest
@@ -113,10 +114,11 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
         }
         
 
-
+        //Creates the actions
         return translateActions(player, gs);
     }
 
+    //Declares the base beahviour in game
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
         int nworkers = 0;
         for (Unit u2 : pgs.getUnits()) {
@@ -125,22 +127,23 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 nworkers++;
             }
         }
+        //If there are less workers and more resources than the cost of building them, train till there is 4
         if (nworkers < 4 && p.getResources() >= workerType.cost) {
             train(u, workerType);
         }
     }
-
+    //Barracks purely trains ranged as Workers double as attack later in game
     public void barracksBehaviour(Unit u, Player p, PhysicalGameState pgs) {
         if (p.getResources() >= rangedType.cost) {
             train(u, rangedType);
         }
     }
 
-
+    //Ranged behaviour is declared here
     public void rangedUnitBehavior(Unit u, Player p, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         Unit closestBase = null;
-        int closestDistance = 3;
+        int closestDistance = 3; //Sets closest distance to 3 as to attack at maximum range
         for (Unit u2 : pgs.getUnits()) {
             if (u2.getPlayer() >= 0 && u2.getPlayer() != p.getID()) {
                 int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
@@ -150,7 +153,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 }
             }
         }
-        if (closestBase != null) {
+        if (closestBase != null) { //Will make  beeline for the nearest enemy base, but will attack enemies if met on path
 
             attack(u, closestBase);
         }
@@ -170,8 +173,8 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 }
             }
         }
-        if (closestEnemy != null) {
-//            System.out.println("LightRushAI.meleeUnitBehavior: " + u + " attacks " + closestEnemy);
+        if (closestEnemy != null) //Worker simply attacks the nearest enemy 
+        {
             attack(u, closestEnemy);
         }
     }
@@ -179,17 +182,17 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
     public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
     	
     	
-        int nbarracks = 0;
-        int attackNeeds = 4;
-        Unit AttackWorker = null;
+        int nbarracks = 0; //Number of built barracks
+        int attackNeeds = 4; //Sets the number of attack units needed
+        Unit AttackWorker = null; //Sets another unit for attack 
 
-        List<Unit> freeWorkers = new LinkedList<Unit>();
+        List<Unit> freeWorkers = new LinkedList<Unit>(); //Creates two lists for the workers 
         List<Unit> fightWorkers = new LinkedList<Unit>();
         
         //Locations of bases and barracks to build on
         List<Integer> reservedPositions = new LinkedList<Integer>();
         
-        freeWorkers.addAll(workers);
+        freeWorkers.addAll(workers); //All workers are added to free at the start 
 
         if (workers.isEmpty()) 
         {
@@ -198,14 +201,14 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
 
    
         
-        if (attackNeeds < freeWorkers.size())
+        if (attackNeeds < freeWorkers.size()) //If there are more free workers than attack, add them to attack list 
         {
         	AttackWorker = (freeWorkers.remove(0));
         	fightWorkers.add(AttackWorker);
         }
         
         
-        for (Unit u2 : pgs.getUnits()) 
+        for (Unit u2 : pgs.getUnits()) //Adds built barracks to the number of barracks 
         {
             if (u2.getType() == barracksType
                 && u2.getPlayer() == p.getID()) 
@@ -258,14 +261,7 @@ public class UltraSuperMegaHyperBlaster extends AbstractionLayerAI {
                 }
             }
         }
-        
-//   	 	// Tells free workers to attack
-//   	 	for (Unit unit:fightWorkers) 
-//   	 	{
-//   		 meleeUnitBehaviour(unit, p, gs);
-//   	 	}
-        
-        
+          
     }
 
    
